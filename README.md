@@ -2,4 +2,4 @@
 
 ## Current Applications
 
-crane - blink an LED as an example
+crane - serial read and pwm

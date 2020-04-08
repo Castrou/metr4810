@@ -1,19 +1,23 @@
 #include <mbed.h>
 
+#include "STM32FreeRTOS.h"
+
 int main() {
 
   	// put your setup code here, to run once:
-	DigitalOut led(LED1);
-	DigitalIn usr_button(USER_BUTTON);
-	led = 0;
+	PwmOut pwm(PC_8);
+	DigitalIn button(USER_BUTTON);
+	Serial pc(USBTX, USBRX);
+
+	pc.printf("Hello World!\r\n");
+
+	pwm.period_ms(4);
+	pwm.write(0.25f);
 
 	while(1) {
     	// put your main code here, to run repeatedly:
-		if (usr_button) {
-			led = 1; // Apparently this is press to disable LED
-		} else {
-			led = 0;
+		if (button) {
+			pc.printf("Button Pressed");
 		}
-		wait(1);
 	}
 }
