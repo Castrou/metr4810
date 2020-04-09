@@ -9,13 +9,10 @@
 
 /* Includes ***************************************************/
 #include <Arduino.h>
-#include <Servo.h>
 
 #include "STM32FreeRTOS.h"
 #include "FreeRTOSConfig.h"
 #include "task.h"
-
-#include "gripper.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -41,11 +38,11 @@ void setup() {
 					NULL);					/* Task Handler */
 
 	/* Start the Task Scheduler */
-	vTaskStartScheduler();
+	vTaskStartScheduler(); // Shouldn't get past this point - only would if there's not enough RAM
 }
 
 void loop() {
-	
+	/* Don't need it cause everything is done through tasks */
 }
 
 void Example_Task(void *pvParameters) {
