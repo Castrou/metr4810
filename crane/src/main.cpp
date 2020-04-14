@@ -1,61 +1,43 @@
-/** 
-**************************************************************
-* @file crane/src/main.cpp
-* @author Cameron Stroud - 44344968
-* @date 07042020
-* @brief Crane application file
-***************************************************************
-*/
+#include "mbed.h"
+#include "rtos.h"
 
-/* Includes ***************************************************/
-#include <Arduino.h>
-#include <Servo.h>
+#include "Pinduino.h"
 
-#include "STM32FreeRTOS.h"
-#include "FreeRTOSConfig.h"
-#include "task.h"
+Thread thread_console;
+Thread thread_bt;
+Serial pc(USBTX,USBRX, 115200);
+Serial bt(D8_PIN, D2_PIN, 9600);
 
-#include "gripper.h"
+DigitalOut led(LED1);
 
-/* Private typedef -----------------------------------------------------------*/
-/* Private define ------------------------------------------------------------*/
-#define Example_PRIORITY (tskIDLE_PRIORITY + 2)
-#define Example_STACK_SIZE (configMINIMAL_STACK_SIZE * 2)
-/* Private macro -------------------------------------------------------------*/
-/* Private variables ---------------------------------------------------------*/
-TaskHandle_t ExampleHandler;
+void console_thread() {
+    led = 1;
+    char input;
 
-/* Private function prototypes -----------------------------------------------*/
-void Example_Task(void *pvParameter);
-
-
-void setup() {
-	/* Initialisation Functions */
-	/* Application Task Creation */ // won't exist ordinarily
-    xTaskCreate(
-					Example_Task, 			/* Task function */
-					"Example Task", 		/* Task Name */
-					Example_STACK_SIZE,		/* Stack Size */
-					NULL, 					/* Parameters or some shit idk i dont use it */
-					Example_PRIORITY, 		/* Priority */
-					NULL);					/* Task Handler */
-
-	/* Start the Task Scheduler */
-	vTaskStartScheduler();
+    while(1) {
+        input = pc.getc();
+        if(input == '\r') {
+            pc.putc('\n');
+        }
+        pc.putc(input);
+    }
 }
 
-void loop() {
-	
+void bt_thread() {
+
+    while(1) {
+        bt.printf("Yeet\r\n");
+        thread_sleep_for(1000);
+    }
 }
 
-void Example_Task(void *pvParameters) {
 
-	/* Setup LED as output */
-	pinMode(13, OUTPUT);
+int main()
+{
+    pc.printf("Hello World!\r\n");
+    
+    thread_bt.start(bt_thread);
+    thread_console.start(console_thread);
 
-	for (;;) {
-		digitalWrite(13, !digitalRead(13));
-		vTaskDelay(1000);
-	}
-
+    while(1);
 }
