@@ -10,30 +10,52 @@ Serial bt(D8_PIN, D2_PIN, 9600);
 
 DigitalOut led(LED1);
 
+PwmOut gripper(D3_PIN);
+
+char input;
+char line[30];
+
+
 void console_thread() {
-    led = 1;
-    char input;
+    int i = 0;
 
     while(1) {
-        input = pc.getc();
+        input = pc.getc();      // Receive input over serial
+        line[i] = input;
+        line[i] = 'a';
+        i++;
+        pc.putc(input);         // Display input
         if(input == '\r') {
-            pc.putc('\n');
+            // bt.printf("command sent\r\n");
+            pc.putc('\n');      // Proper carriage return
+            line[i] = '\0';
+            // pc.printf("%s\r\n", line);
+            i = 0;
         }
-        pc.putc(input);
     }
 }
 
 void bt_thread() {
-
+    char btInput;
     while(1) {
-        bt.printf("Yeet\r\n");
-        thread_sleep_for(1000);
+        btInput = bt.getc();
+        bt.printf("RECV: %c\r\n", btInput);
+        if(btInput == 'o') {
+            led = 1;
+            gripper.pulsewidth(0.002f);
+            led = 0;
+        } else if (btInput == 'f') {
+            gripper.pulsewidth(0.001f);
+        }
+        thread_sleep_for(1);
     }
 }
 
 
 int main()
 {
+    gripper.period_ms(20);
+    gripper.pulsewidth(0.0015f);
     pc.printf("Hello World!\r\n");
     
     thread_bt.start(bt_thread);

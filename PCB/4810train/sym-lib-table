@@ -1,0 +1,4 @@
+(sym_lib_table
+  (lib (name 2020-04-16_10-58-23)(type Legacy)(uri "/home/castrou/Downloads/F303RE Docs/2020-04-16_10-58-23.lib")(options "")(descr ""))
+  (lib (name Custom_Driver_Motor)(type Legacy)(uri ${KIPRJMOD}/Custom_Driver_Motor.lib)(options "")(descr ""))
+)
