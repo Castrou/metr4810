@@ -3,14 +3,21 @@
 
 #include "Pinduino.h"
 
+// #include "gripper.h"
+
+
 Thread thread_console;
 Thread thread_bt;
+Thread thread_motor;
+
 Serial pc(USBTX,USBRX, 115200);
 Serial bt(D8_PIN, D2_PIN, 9600);
 
 DigitalOut led(LED1);
 
-PwmOut gripper(D3_PIN);
+DigitalOut dir(D2_PIN);
+PwmOut stepper(D3_PIN);
+// Gripper gripper(D3_PIN);
 
 char input;
 char line[30];
@@ -42,22 +49,35 @@ void bt_thread() {
         bt.printf("RECV: %c\r\n", btInput);
         if(btInput == 'o') {
             led = 1;
-            gripper.pulsewidth(0.002f);
+            // gripper.release();
+            // gripper.pulsewidth(0.002f);
             led = 0;
         } else if (btInput == 'f') {
-            gripper.pulsewidth(0.001f);
+            // gripper.grasp();
+            // gripper.pulsewidth(0.001f);
         }
         thread_sleep_for(1);
+    }
+}
+
+void motor_thread() {
+    stepper.period_ms(2);
+    stepper.pulsewidth(0.001f);
+    dir = 1;
+    while(1) {
+        dir = 1;
+        thread_sleep_for(1000);
+        dir = 0;
+        thread_sleep_for(1000);
     }
 }
 
 
 int main()
 {
-    gripper.period_ms(20);
-    gripper.pulsewidth(0.0015f);
     pc.printf("Hello World!\r\n");
     
+    thread_motor.start(motor_thread);
     thread_bt.start(bt_thread);
     thread_console.start(console_thread);
 
