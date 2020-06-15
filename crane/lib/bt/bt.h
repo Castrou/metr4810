@@ -14,12 +14,10 @@
 #ifndef __BT_H
 #define __BT_H
 
-#define BUFFER_SIZE     80
+#include "../include/Pinduino.h"
 
 /* Function prototypes -------------------------------------------------------*/
 void bt_init( void );
 void bt_tx( char *payload );
-void bt_read( char **payload );
-bool bt_rxFlag( void );
 
 #endif // __CLI_H

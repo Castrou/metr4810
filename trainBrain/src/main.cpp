@@ -25,13 +25,11 @@ int main() {
 
 	while(1) {
 		if (bt_rxFlag()) {
-			ledToggle = !ledToggle;
-			bt_clearFlag();
 			/* BT Rx */
-			// bt_read(&btRx);
-			// if (btRx[btIndex] == 'd') {
-			// 	led = !led;
-			// }	
+			bt_read(&btRx);
+			if (btRx[btIndex] == 'd') {
+				ledToggle = !ledToggle;
+			}	
 		}
 		led = !led;
 		wait_ms(100);

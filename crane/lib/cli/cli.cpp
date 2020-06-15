@@ -1,9 +1,9 @@
 /** 
  **************************************************************
- * @file trainBrain/lib/bt/bt.cpp
+ * @file host/lib/cli/cli.cpp
  * @author Cameron Stroud - 44344968
  * @date 14062020
- * @brief Bluetooth Task source file
+ * @brief CLI Task source file
  ***************************************************************
  * EXTERNAL FUNCTIONS 
  ***************************************************************
@@ -14,27 +14,30 @@
 
 /* Includes ***************************************************/
 #include <mbed.h>
+#include <stdarg.h>
+#include <stdio.h>
 
+#include "cli.h"
 #include "bt.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-RawSerial bt(PA_2, PA_3, 38400);
+Thread thread_cli;
+RawSerial pc(USBTX,USBRX, 115200);
 
-DigitalOut led1(PA_1);
 // Circular buffers for serial TX and RX data - used by interrupt routines
-const int buffer_size = BUFFER_SIZE;
+const int buffer_size = 255;
 // might need to increase buffer size for high baud rates
-char btRx_buffer[buffer_size+1];
-int btRx_buffPos = 0;
+char rx_buffer[buffer_size+1];
+int rx_buffPos;
 
-int btRxFlag = 0;
+int rxFlag = 0;
 
 /* Private function prototypes -----------------------------------------------*/
-void bt_thread();
-void bt_rx_interrupt();
+void cli_thread();
+void cli_rx_interrupt();
 
 /*----------------------------------------------------------------------------*/
 
@@ -43,22 +46,29 @@ void bt_rx_interrupt();
 * @param  None
 * @retval None
 */
-void bt_init( void ) {
+void cli_init( void ) {
 
-    bt.attach(&bt_rx_interrupt, RawSerial::RxIrq);
+    pc.attach(&cli_rx_interrupt, RawSerial::RxIrq);
+    thread_cli.start(cli_thread);
 }
 
 /*----------------------------------------------------------------------------*/
 
 /**
-* @brief  Sends to HC-05
+* @brief  Send information to the console
 * @param  None
 * @retval None
 */
-void bt_tx( char *payload ) {
+void serial_print(const char *payload, ...) {
 
-    bt.printf(payload);
+    char buffer[100];
+    va_list argList;
+    
+    va_start(argList, payload);
+    vsnprintf(buffer, 100, payload, argList);
+	va_end(argList);
 
+    pc.printf("%s", buffer);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -68,65 +78,83 @@ void bt_tx( char *payload ) {
 * @param  None
 * @retval None
 */
-void bt_clear_buffer( void ) {
+void cli_clear_buffer( void ) {
     for(int i = 0; i < buffer_size; i++) {
-        btRx_buffer[i] = 0;
+        rx_buffer[i] = 0;
     }
 }
 
 /*----------------------------------------------------------------------------*/
 
 /**
-* @brief  BT Interrupt for receive
+* @brief  CLI Interrupt for receive
 * @param  None
 * @retval None
 */
-void bt_rx_interrupt( void ) {
+void cli_rx_interrupt( void ) {
 
     char rx_char;
 
-    while (bt.readable()) {
-        rx_char = bt.getc(); // Receive from buffer
-        btRx_buffer[btRx_buffPos] = rx_char;
-        btRx_buffPos++;
+    while(pc.readable()) {
+        rx_char = pc.getc(); // Receive from buffer
+        pc.putc(rx_char); // Show on console
+        rx_buffer[rx_buffPos] = rx_char;
+        rx_buffPos++;
+
+        if(rx_char == '\r') { // End of line
+            pc.putc('\n');      // Proper carriage return
+            rx_buffer[rx_buffPos] = '\n';    // NULL terminate string
+            rx_buffPos = 0;
+            rxFlag = 1;
+        }
     }
 
-    btRxFlag = 1;
 }
 
 /*----------------------------------------------------------------------------*/
 
 /**
-* @brief  Return btRxFlag
+* @brief  Check if command
 * @param  None
 * @retval None
 */
-bool bt_rxFlag( void ) {
+bool cli_at_check( char *input ) {
 
-    return btRxFlag;
+    return (input[0] == 'A' && input[1] == 'T');
 }
 
-void bt_clearFlag(void) {
-    btRxFlag = 0;
+bool cli_bt_check( char *input ) {
+
+    return (input[0] == 'b' && input[1] == 't' && input[2] == ' ');
 }
+
 /*----------------------------------------------------------------------------*/
 
 /**
-* @brief  Read BT info
+* @brief  CLI Thread - Process console serial input
 * @param  None
 * @retval None
 */
-void bt_read( char **payload ) {
+void cli_thread( void ) {
+
+    DigitalOut led(LED1);
     
-    /* Move buffer data into payload */
-    for (int i = 0; i < btRx_buffPos; i++) {
-        *payload[i] = btRx_buffer[i];
+    while(1) {
+
+        if (rxFlag) {
+            if(cli_bt_check(rx_buffer)) {
+                led = !led;
+                bt_tx(rx_buffer);
+                serial_print("%s", rx_buffer);
+            } else if (cli_at_check(rx_buffer)) {
+                bt_tx(rx_buffer);
+            }
+            cli_clear_buffer();
+            rxFlag = 0;
+        }
+
+        thread_sleep_for(10);
     }
-
-    btRxFlag = 0; // Clear rx flag
-    btRx_buffPos = 0; // Reset buffer pos
-    bt_clear_buffer(); // Empty buffer
-
 }
 
 /*----------------------------------------------------------------------------*/
