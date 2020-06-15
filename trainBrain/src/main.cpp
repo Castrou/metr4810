@@ -1,24 +1,39 @@
 #include <mbed.h>
 
-Serial bt(PA_2, PA_3, 9600);
+#include "bt.h"
+
+bool check_bt_command( char *input) {
+	
+	return (input[0] == 'b' && input[1] == 't' && input[2] == ' ');
+}
 
 int main() {
-	// put your setup code here, to run once:
-	char btInput = 0;
-	DigitalOut led(PA_0);	// Declare led as DigitalOut at LED1 pin
+	
+	/* Variable Declaration */
+	DigitalOut led(PA_0);
 	DigitalOut ledToggle(PA_1);
-	led = 1;				// Turn LED on
+	PwmOut trainMotor(PA_9);
+	char *btRx;
+	const int btIndex = 3;
+
+	/* Driver Initialisation */
+	bt_init();
+
+	/* Other Init */
+	btRx = (char *)malloc(sizeof(char)*BUFFER_SIZE);
+	led = 0;
 
 	while(1) {
-		// btInput = bt.getc();
-        // bt.printf("RECV: %c\r\n", btInput);
-        // if(btInput == 'o') {
-        //     led = 1;
-        // } else if (btInput == 'f') {
-        //     led = 0;
-        // }
-		// btInput = 0;
-		ledToggle = !(ledToggle);
-		wait_ms(1000);
+		if (bt_rxFlag()) {
+			ledToggle = !ledToggle;
+			bt_clearFlag();
+			/* BT Rx */
+			// bt_read(&btRx);
+			// if (btRx[btIndex] == 'd') {
+			// 	led = !led;
+			// }	
+		}
+		led = !led;
+		wait_ms(100);
 	}
 }

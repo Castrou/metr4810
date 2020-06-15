@@ -114,13 +114,18 @@ void cli_rx_interrupt( void ) {
 /*----------------------------------------------------------------------------*/
 
 /**
-* @brief  Check if AT command
+* @brief  Check if command
 * @param  None
 * @retval None
 */
 bool cli_at_check( char *input ) {
 
     return (input[0] == 'A' && input[1] == 'T');
+}
+
+bool cli_bt_check( char *input ) {
+
+    return (input[0] == 'b' && input[1] == 't' && input[2] == ' ');
 }
 
 /*----------------------------------------------------------------------------*/
@@ -132,10 +137,16 @@ bool cli_at_check( char *input ) {
 */
 void cli_thread( void ) {
 
+    DigitalOut led(LED1);
+    
     while(1) {
 
         if (rxFlag) {
-            if (cli_at_check(rx_buffer)) {
+            if(cli_bt_check(rx_buffer)) {
+                led = !led;
+                bt_tx(rx_buffer);
+                serial_print("%s", rx_buffer);
+            } else if (cli_at_check(rx_buffer)) {
                 bt_tx(rx_buffer);
             }
             cli_clear_buffer();

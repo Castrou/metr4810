@@ -1,6 +1,6 @@
 /** 
  **************************************************************
- * @file host/lib/bt/bt.cpp
+ * @file trainBrain/lib/bt/bt.cpp
  * @author Cameron Stroud - 44344968
  * @date 14062020
  * @brief Bluetooth Task source file
@@ -16,26 +16,21 @@
 #include <mbed.h>
 
 #include "bt.h"
-#include "cli.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-Thread thread_bt;
-RawSerial bt(D8_PIN, D2_PIN, 38400);
-RawSerial btSlave(D8_PIN, D2_PIN, 38400);
+RawSerial bt(PA_2, PA_3, 38400);
 
-
+DigitalOut led1(PA_1);
 // Circular buffers for serial TX and RX data - used by interrupt routines
-const int buffer_size = 255;
+const int buffer_size = BUFFER_SIZE;
 // might need to increase buffer size for high baud rates
-char btRx_buffer[buffer_size+1];
+char btRx_buffer[buffer_size];
 int btRx_buffPos = 0;
 
 int btRxFlag = 0;
-
-DigitalOut led(LED1);
 
 /* Private function prototypes -----------------------------------------------*/
 void bt_thread();
@@ -51,8 +46,6 @@ void bt_rx_interrupt();
 void bt_init( void ) {
 
     bt.attach(&bt_rx_interrupt, RawSerial::RxIrq);
-    // btSlave.attach(&bt_slave_interrupt, RawSerial::RxIrq);
-    thread_bt.start(bt_thread);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -94,33 +87,47 @@ void bt_rx_interrupt( void ) {
 
     while (bt.readable()) {
         rx_char = bt.getc(); // Receive from buffer
-        serial_print("%c", rx_char); // Show on console
         btRx_buffer[btRx_buffPos] = rx_char;
         btRx_buffPos++;
-
-        if(rx_char == '\r') { // End of line
-            btRx_buffPos = 0;
-            btRxFlag = 1;
-        }
     }
+
+    btRx_buffPos = 0;
+    btRxFlag = 1;
 }
 
 /*----------------------------------------------------------------------------*/
 
 /**
-* @brief  BT Thread - Process bluetooth RX info
+* @brief  Return btRxFlag
 * @param  None
 * @retval None
 */
-void bt_thread( void ) {
+bool bt_rxFlag( void ) {
 
-    while(1) {
+    return btRxFlag;
+}
 
-        if (btRxFlag) {
-            bt_clear_buffer();
-        }
-        thread_sleep_for(100);
+void bt_clearFlag(void) {
+    btRxFlag = 0;
+}
+/*----------------------------------------------------------------------------*/
+
+/**
+* @brief  Read BT info
+* @param  None
+* @retval None
+*/
+void bt_read( char **payload ) {
+    
+    /* Move buffer data into payload */
+    led1 = 1;
+    for (int i = 0; i < buffer_size; i++) {
+        *payload[i] = btRx_buffer[i];
     }
+
+    btRxFlag = 0; // Clear rx flag
+    bt_clear_buffer(); // Empty buffer
+
 }
 
 /*----------------------------------------------------------------------------*/
