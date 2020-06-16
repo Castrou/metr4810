@@ -49,6 +49,7 @@ void cli_rx_interrupt();
 void cli_init( void ) {
 
     pc.attach(&cli_rx_interrupt, RawSerial::RxIrq);
+    serial_print("CLI Thread Initialising...\r\n");
     thread_cli.start(cli_thread);
 }
 
@@ -95,6 +96,7 @@ void cli_rx_interrupt( void ) {
 
     char rx_char;
 
+    
     while(pc.readable()) {
         rx_char = pc.getc(); // Receive from buffer
         pc.putc(rx_char); // Show on console
@@ -139,13 +141,14 @@ void cli_thread( void ) {
 
     DigitalOut led(LED1);
     
+    serial_print("CLI Thread Initialised\r\n");
+
     while(1) {
 
         if (rxFlag) {
             if(cli_bt_check(rx_buffer)) {
                 led = !led;
                 bt_tx(rx_buffer);
-                serial_print("%s", rx_buffer);
             } else if (cli_at_check(rx_buffer)) {
                 bt_tx(rx_buffer);
             }

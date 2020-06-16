@@ -72,6 +72,9 @@ void bt_clear_buffer( void ) {
     for(int i = 0; i < buffer_size; i++) {
         btRx_buffer[i] = 0;
     }
+
+    btRx_buffPos = 0;
+    btRxFlag = 0;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -106,9 +109,6 @@ bool bt_rxFlag( void ) {
     return btRxFlag;
 }
 
-void bt_clearFlag(void) {
-    btRxFlag = 0;
-}
 /*----------------------------------------------------------------------------*/
 
 /**
@@ -116,17 +116,9 @@ void bt_clearFlag(void) {
 * @param  None
 * @retval None
 */
-void bt_read( char **payload ) {
+char *bt_read( void ) {
     
-    /* Move buffer data into payload */
-    for (int i = 0; i < btRx_buffPos; i++) {
-        *payload[i] = btRx_buffer[i];
-    }
-
-    btRxFlag = 0; // Clear rx flag
-    btRx_buffPos = 0; // Reset buffer pos
-    bt_clear_buffer(); // Empty buffer
-
+    return btRx_buffer;
 }
 
 /*----------------------------------------------------------------------------*/

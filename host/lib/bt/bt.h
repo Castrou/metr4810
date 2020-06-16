@@ -16,6 +16,8 @@
 
 #include "../include/Pinduino.h"
 
+#define BUFFER_SIZE     80
+
 /* Function prototypes -------------------------------------------------------*/
 void bt_init( void );
 void bt_tx( char *payload );
