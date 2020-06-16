@@ -16,7 +16,8 @@
 #include <mbed.h>
 
 #include "bt.h"
-#include "cli.h"
+// #include "cli.h"
+#include "serial.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -127,8 +128,8 @@ char *bt_read( void ) {
 */
 void bt_thread( void ) {
 
-    char *btRx;
-    btRx = (char *)malloc(sizeof(char)*BUFFER_SIZE);
+    // char *btRx;
+    // btRx = (char *)malloc(sizeof(char)*BUFFER_SIZE);
     serial_print("BT Thread Initialised\r\n");
     while(1) {
 
@@ -136,7 +137,7 @@ void bt_thread( void ) {
             serial_print("BT Received: %s", btRx_buffer);
             bt_clear_buffer();
         }
-        thread_sleep_for(100);
+        thread_sleep_for(10);
     }
 }
 

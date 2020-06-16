@@ -15,6 +15,22 @@
 import os
 import pprint
 import pygame
+import math
+import serial
+
+
+### Definitions 
+BYTE_SIZE = 8
+
+PAD = 0xFF
+
+L2 = 2
+R2 = 5
+LX = 0
+LY = 1
+RX = 3
+RY = 4
+###
 
 class PS4Controller(object):
     """Class representing the PS4 controller. Pretty straightforward functionality."""
@@ -22,7 +38,9 @@ class PS4Controller(object):
     controller = None
     axis_data = None
     button_data = None
-    hat_data = None
+    # hat_data = None
+    tx_data = None
+    tx_state = 0
 
     def init(self):
         """Initialize the joystick components"""
@@ -31,35 +49,6 @@ class PS4Controller(object):
         pygame.joystick.init()
         self.controller = pygame.joystick.Joystick(0)
         self.controller.init()
-
-    def transmit_info(self):
-        print("---------TRIGGERS---------")
-        try:
-            print("L2: " + str(self.axis_data[2]))
-        except KeyError:
-            pass
-        try:
-            print("R2: " + str(self.axis_data[5]))
-        except KeyError:
-            pass
-        print("--------JOYSTICKS--------")
-        try:
-            print("LX: " + str(self.axis_data[0]))
-        except KeyError:
-            pass
-        try:
-            print("LY: " + str(self.axis_data[1]))
-        except KeyError:
-            pass
-        print("")
-        try:
-            print("RX: " + str(self.axis_data[3]))
-        except KeyError:
-            pass
-        try:
-            print("RY: " + str(self.axis_data[4]))
-        except KeyError:
-            pass
 
     def listen(self):
         """Listen for events to happen"""
@@ -70,31 +59,31 @@ class PS4Controller(object):
         if not self.button_data:
             self.button_data = {}
             for i in range(self.controller.get_numbuttons()):
-                self.button_data[i] = False
+                self.button_data[i] = 0
 
-        if not self.hat_data:
-            self.hat_data = {}
-            for i in range(self.controller.get_numhats()):
-                self.hat_data[i] = (0, 0)
+        # if not self.hat_data:
+        #     self.hat_data = {}
+        #     for i in range(self.controller.get_numhats()):
+        #         self.hat_data[i] = (0, 0)
 
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.JOYAXISMOTION:
                     self.axis_data[event.axis] = round(event.value,2)
                 elif event.type == pygame.JOYBUTTONDOWN:
-                    self.button_data[event.button] = True
+                    self.button_data[event.button] = 1
                 elif event.type == pygame.JOYBUTTONUP:
-                    self.button_data[event.button] = False
-                elif event.type == pygame.JOYHATMOTION:
-                    self.hat_data[event.hat] = event.value
+                    self.button_data[event.button] = 0
+                # elif event.type == pygame.JOYHATMOTION:
+                #     self.hat_data[event.hat] = event.value
 
                 # Insert your code on what you would like to happen for each event here!
                 # In the current setup, I have the state simply printing out to the screen.
                 
-                os.system('clear')
-                self.transmit_info()
+                # os.system('clear')
+                # self.update_transmit_info()
                 # pprint.pprint(self.button_data)
-                pprint.pprint(self.axis_data)
+                # pprint.pprint(self.axis_data)
                 # pprint.pprint(self.hat_data)
 
 

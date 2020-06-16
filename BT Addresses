@@ -1,8 +1,6 @@
 KNOCKOFF_SLAVE+ADDR:98d3:51:fde450
 NAKED_SLAVE+ADDR:0019:10:08ef31
 
-KNOCKOFF_MASTER+ADDR:
-
 //
 Controller Mapping
 //
@@ -10,13 +8,14 @@ Controller Mapping
 0: X
 1: Circle
 2: Triangle
-3: sq
+3: Square
 4: L1
 5: R1
 6: L2
 7: R2
 
-[BUTTON] | [L2] | [R2] | [LX] | [RX] | [LY] | [RY]
+BIG                             LITTLE
+[BUTTON] [L2] [R2] [LX] [LY] [RX] [RY]
 
 1st Byte: Button Presses
 X       Circle  Triangle    Square      L1      R1
