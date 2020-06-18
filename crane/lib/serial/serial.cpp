@@ -19,6 +19,7 @@
 
 #include "serial.h"
 #include "bt.h"
+#include "stepper.h"
 
 /* Private typedef -----------------------------------------------------------*/
 typedef enum {
@@ -204,29 +205,31 @@ void serial_rx_interrupt( void ) {
                 break;
 
             case RX_TRANSMIT:
-                if (buttons&L1_BUTTON) {
-                    /* Train only needs triggers (at this stage)*/
-                    bt_tx(BT_TRAIN, PREAMBLE);
-                    bt_tx(BT_TRAIN, l2);
-                    bt_tx(BT_TRAIN, r2);
-                    bt_tx(BT_TRAIN, POSTAMBLE);
-                } else {
-                    /* Yeah crane needs everythin */
-                    bt_tx(BT_CRANE, PREAMBLE);
-                    bt_tx(BT_CRANE, l2);
-                    bt_tx(BT_CRANE, r2);
-                    // bt_tx(BT_CRANE, lx);
-                    // bt_tx(BT_CRANE, ly);
-                    // bt_tx(BT_CRANE, rx);
-                    // bt_tx(BT_CRANE, ry);
-                    bt_tx(BT_CRANE, POSTAMBLE);
-                }
+                // if (buttons&L1_BUTTON) {
+                //     /* Train only needs triggers (at this stage)*/
+                //     bt_tx(BT_TRAIN, PREAMBLE);
+                //     bt_tx(BT_TRAIN, l2);
+                //     bt_tx(BT_TRAIN, r2);
+                //     bt_tx(BT_TRAIN, POSTAMBLE);
+                // } else {
+                //     /* Yeah crane needs everythin */
+                //     bt_tx(BT_CRANE, PREAMBLE);
+                //     bt_tx(BT_CRANE, l2);
+                //     bt_tx(BT_CRANE, r2);
+                //     // bt_tx(BT_CRANE, lx);
+                //     // bt_tx(BT_CRANE, ly);
+                //     // bt_tx(BT_CRANE, rx);
+                //     // bt_tx(BT_CRANE, ry);
+                //     bt_tx(BT_CRANE, POSTAMBLE);
+                // }
+
                 serial_print("--------------------\r\n");
                 serial_print("L2: %d\tR2: %d\r\n", l2, r2);
                 serial_print("LX: %d\tRX: %d\r\n", lx, rx);
                 serial_print("LY: %d\tRY: %d\r\n", ly, ry);
                 serial_print("--------------------\r\n");
                 serial_print("Buttons: %d\r\n", buttons);
+                stepper_write(STEPPER_ROTATE, rx);
                 rx_state = RX_WAITING;
                 break;
 

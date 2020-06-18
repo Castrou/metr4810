@@ -26,6 +26,6 @@ typedef enum {
 
 /* Function prototypes -------------------------------------------------------*/
 void bt_init( void );
-void bt_tx( BTModule_t dest, uint8_t payload );
+void bt_tx( BTModule_t dest, char *payload );
 
 #endif // __CLI_H

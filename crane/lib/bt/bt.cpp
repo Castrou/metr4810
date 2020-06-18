@@ -16,7 +16,8 @@
 #include <mbed.h>
 
 #include "bt.h"
-#include "cli.h"
+#include "serial.h"
+// #include "cli.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/

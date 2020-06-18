@@ -16,21 +16,42 @@
 #include <mbed.h>
 
 #include "bt.h"
+#include "motor.h"
 
 /* Private typedef -----------------------------------------------------------*/
+typedef enum {
+    RX_WAITING,
+    RX_RECEIVING,
+    RX_EXECUTE
+} RXState_t;
+
+typedef enum {
+    L2_VAL,
+    R2_VAL
+};
+
 /* Private define ------------------------------------------------------------*/
+#define PREAMBLE    0xFE
+#define POSTAMBLE   0xFF
+
+#define SIGN        0b10000000
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 RawSerial bt(PA_2, PA_3, 38400);
 
 DigitalOut led1(PA_1);
-// Circular buffers for serial TX and RX data - used by interrupt routines
+DigitalOut led2(PA_0);
+
 const int buffer_size = BUFFER_SIZE;
-// might need to increase buffer size for high baud rates
 char btRx_buffer[buffer_size+1];
+RXState_t btRx_state;
+uint8_t btRx_val;
 int btRx_buffPos = 0;
 
 int btRxFlag = 0;
+
+uint8_t l2 = 0;
+uint8_t r2 = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 void bt_thread();
@@ -45,7 +66,9 @@ void bt_rx_interrupt();
 */
 void bt_init( void ) {
 
+    btRx_state = RX_WAITING;
     bt.attach(&bt_rx_interrupt, RawSerial::RxIrq);
+    
 }
 
 /*----------------------------------------------------------------------------*/
@@ -80,21 +103,58 @@ void bt_clear_buffer( void ) {
 /*----------------------------------------------------------------------------*/
 
 /**
+* @brief  Update Controller input variables based on packet position
+* @param  None
+* @retval None
+*/
+void update_vals( int pos ) {
+    switch(pos) {
+        case L2_VAL:
+            l2 = btRx_val;
+            break;
+
+        case R2_VAL:
+            r2 = btRx_val;
+            break;
+    }
+}
+
+/*----------------------------------------------------------------------------*/
+
+/**
 * @brief  BT Interrupt for receive
 * @param  None
 * @retval None
 */
 void bt_rx_interrupt( void ) {
 
-    char rx_char;
-
     while (bt.readable()) {
-        rx_char = bt.getc(); // Receive from buffer
-        btRx_buffer[btRx_buffPos] = rx_char;
-        btRx_buffPos++;
+        btRx_val = bt.getc(); // Receive from buffer
+        switch(btRx_state) {
+            case RX_WAITING:
+                if (btRx_val == 0xFE) {
+                    led1 = !led1;
+                    btRx_state = RX_RECEIVING;
+                }
+                break;
+            
+            case RX_RECEIVING:
+                if (btRx_val == POSTAMBLE) {
+                    btRx_state = RX_EXECUTE;
+                    break;
+                }
+                update_vals(btRx_buffPos);
+                btRx_buffPos++;
+                break;
+            
+            case RX_EXECUTE:
+                motor_write(l2, r2);
+                led2 = !led2;
+                btRx_buffPos = 0;
+                btRx_state = RX_WAITING;
+                break;
+        } 
     }
-
-    btRxFlag = 1;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -116,9 +176,9 @@ bool bt_rxFlag( void ) {
 * @param  None
 * @retval None
 */
-char *bt_read( void ) {
+uint8_t bt_read( void ) {
     
-    return btRx_buffer;
+    return btRx_val;
 }
 
 /*----------------------------------------------------------------------------*/

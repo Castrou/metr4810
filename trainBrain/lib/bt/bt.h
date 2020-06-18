@@ -19,7 +19,7 @@
 /* Function prototypes -------------------------------------------------------*/
 void bt_init( void );
 void bt_tx( char *payload );
-char *bt_read( void );
+uint8_t bt_read( void );
 bool bt_rxFlag( void );
 void bt_clear_buffer( void );
 

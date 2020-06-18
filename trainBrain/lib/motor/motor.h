@@ -1,9 +1,9 @@
 /** 
  **************************************************************
- * @file host/lib/bt/bt.h
+ * @file host/lib/motor/motor.h
  * @author Cameron Stroud - 44344968
- * @date 14062020
- * @brief Bluetooth Task header file
+ * @date 17062020
+ * @brief Motor header file
  ***************************************************************
  * EXTERNAL FUNCTIONS 
  ***************************************************************
@@ -11,21 +11,11 @@
  *************************************************************** 
  */
 
-#ifndef __BT_H
-#define __BT_H
-
-#include "../include/Pinduino.h"
-
-#define BUFFER_SIZE     80
-
-/* Global Typedef ------------------------------------------------------------*/
-typedef enum {
-    BT_CRANE,
-    BT_TRAIN
-} BTModule_t;
+#ifndef __MOTOR_H
+#define __MOTOR_H
 
 /* Function prototypes -------------------------------------------------------*/
-void bt_init( void );
-void bt_tx( BTModule_t dest, uint8_t payload );
+void motor_init( void );
+void motor_write( uint8_t l2val, uint8_t r2val );
 
 #endif // __CLI_H

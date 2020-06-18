@@ -16,8 +16,8 @@
 #include <mbed.h>
 
 #include "bt.h"
-// #include "cli.h"
-#include "serial.h"
+#include "cli.h"
+// #include "serial.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -51,10 +51,10 @@ void bt_rx_interrupt();
 */
 void bt_init( void ) {
 
-    // btCrane.attach(&bt_rx_interrupt, RawSerial::RxIrq);
+    btCrane.attach(&bt_rx_interrupt, RawSerial::RxIrq);
     // // btSlave.attach(&bt_slave_interrupt, RawSerial::RxIrq);
-    // serial_print("BT Thread Initialising...\r\n");
-    // thread_bt.start(bt_thread);
+    serial_print("BT Thread Initialising...\r\n");
+    thread_bt.start(bt_thread);
 
 }
 
@@ -65,17 +65,18 @@ void bt_init( void ) {
 * @param  None
 * @retval None
 */
-void bt_tx( BTModule_t dest, uint8_t payload ) {
+void bt_tx( BTModule_t dest, char *payload ) {
 
-    switch(dest) {
-        case BT_CRANE:
-            btCrane.putc(payload);
-            break;
+    btCrane.printf(payload);
+    // switch(dest) {
+    //     case BT_CRANE:
+    //         btCrane.putc(payload);
+    //         break;
 
-        case BT_TRAIN:
-            btTrain.putc(payload);
-            break;
-    }
+    //     case BT_TRAIN:
+    //         btTrain.putc(payload);
+    //         break;
+    // }
 }
 
 /*----------------------------------------------------------------------------*/
@@ -101,19 +102,18 @@ void bt_clear_buffer( void ) {
 * @param  None
 * @retval None
 */
-// void bt_rx_interrupt( void ) {
+void bt_rx_interrupt( void ) {
 
-//     char rx_char;
+    char rx_char;
 
-//     while (btCrane.readable()) {
-//         rx_char = btCrane.getc(); // Receive from buffer
-//         serial_print("%c", rx_char); // Show on console
-//         btRx_buffer[btRx_buffPos] = rx_char;
-//         btRx_buffPos++;
-//     }
+    while (btCrane.readable()) {
+        rx_char = btCrane.getc(); // Receive from buffer
+        btRx_buffer[btRx_buffPos] = rx_char;
+        btRx_buffPos++;
+    }
 
-//     btRxFlag = 1;
-// }
+    btRxFlag = 1;
+}
 
 /*----------------------------------------------------------------------------*/
 

@@ -1,9 +1,9 @@
 /** 
  **************************************************************
- * @file host/lib/bt/bt.h
+ * @file crane/lib/stepper/stepper.cpp
  * @author Cameron Stroud - 44344968
- * @date 14062020
- * @brief Bluetooth Task header file
+ * @date 18062020
+ * @brief Stepper header file
  ***************************************************************
  * EXTERNAL FUNCTIONS 
  ***************************************************************
@@ -11,21 +11,17 @@
  *************************************************************** 
  */
 
-#ifndef __BT_H
-#define __BT_H
+#ifndef __STEPPER_H
+#define __STEPPER_H
 
-#include "../include/Pinduino.h"
-
-#define BUFFER_SIZE     80
-
-/* Global Typedef ------------------------------------------------------------*/
 typedef enum {
-    BT_CRANE,
-    BT_TRAIN
-} BTModule_t;
+    STEPPER_ROTATE,
+    STEPPER_HEIGHT,
+    STEPPER_BOOM
+} Stepper_t;
 
 /* Function prototypes -------------------------------------------------------*/
-void bt_init( void );
-void bt_tx( BTModule_t dest, uint8_t payload );
+void stepper_init();
+void stepper_write(Stepper_t stepper, uint8_t axisVal);
 
-#endif // __CLI_H
+#endif // __SERIAL_H

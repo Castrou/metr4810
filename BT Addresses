@@ -2,45 +2,74 @@ KNOCKOFF_SLAVE+ADDR:98d3:51:fde450
 NAKED_SLAVE+ADDR:0019:10:08ef31
 
 //
-Controller Mapping
+// Stepper Connections (Assume RHS connection)
+
+STEPPER_ROTATE (need to double check)
+TOP_TOP: green
+TOP_BOT: black
+BOT_TOP: blue
+BOT_BOT: red
+
+STEPPER_HEIGHT
+TOP_TOP:
+TOP_BOT:
+BOT_TOP:
+BOT_BOT:
+
+STEPPER_BOOM
+TOP_TOP:
+TOP_BOT:
+BOT_TOP:
+BOT_BOT:
+
+// 
+// Train Packet Format
+
+    BIG   LIL
+    [L2] [R2]
+
+
 //
+// Crane Packet Format
 
-0: X
-1: Circle
-2: Triangle
-3: Square
-4: L1
-5: R1
-6: L2
-7: R2
+    BIG                    LITTLE
+    [L2] [R2] [LX] [LY] [RX] [RY]
 
-BIG                             LITTLE
-[BUTTON] [L2] [R2] [LX] [LY] [RX] [RY]
 
-1st Byte: Button Presses
-X       Circle  Triangle    Square      L1      R1
-1/0     1/0     1/0         1/0         1/0     1/0     0           0
+//
+// Python to Host Packet Format
 
-2nd Byte: L2 Value
-Sign    L2VAL
-0/1     0bXXXXXXX
+    BIG                             LITTLE
+    [BUTTON] [L2] [R2] [LX] [LY] [RX] [RY]
 
-3rd Byte: R2 Value
-Sign    R2VAL
-0/1     0bXXXXXXX
 
-4th Byte: LX Value
-Sign    L2VAL
-0/1     0bXXXXXXX
+//
+// Byte Format
 
-5th Byte: RX Value
-Sign    RXVAL
-0/1     0bXXXXXXX
+    1st Byte: Button Presses
+    X       Circle  Triangle    Square      L1      R1
+    1/0     1/0     1/0         1/0         1/0     1/0     0           0
 
-6th Byte: LY Value
-Sign    LYVAL
-0/1     0bXXXXXXX
+    2nd Byte: L2 Value
+    Sign    L2VAL
+    0/1     0bXXXXXXX
 
-7th Byte: RY Value
-Sign    RYVAL
-0/1     0bXXXXXXX
+    3rd Byte: R2 Value
+    Sign    R2VAL
+    0/1     0bXXXXXXX
+
+    4th Byte: LX Value
+    Sign    L2VAL
+    0/1     0bXXXXXXX
+
+    5th Byte: RX Value
+    Sign    RXVAL
+    0/1     0bXXXXXXX
+
+    6th Byte: LY Value
+    Sign    LYVAL
+    0/1     0bXXXXXXX
+
+    7th Byte: RY Value
+    Sign    RYVAL
+    0/1     0bXXXXXXX
