@@ -1,13 +1,14 @@
 /** 
  **************************************************************
- * @file host/lib/serial/serial.cpp
+ * @file crane/lib/serial/serial.cpp
  * @author Cameron Stroud - 44344968
  * @date 14062020
  * @brief Serial Task header file
  ***************************************************************
  * EXTERNAL FUNCTIONS 
  ***************************************************************
- * 
+ * void myserial_init( void );
+ * void serial_print(const char *payload, ...);
  *************************************************************** 
  */
 

@@ -1,21 +1,27 @@
 /** 
  **************************************************************
- * @file host/lib/cli/cli.cpp
+ * @file btModule_commandline/lib/bt/bt.h
  * @author Cameron Stroud - 44344968
  * @date 14062020
- * @brief CLI Task header file
+ * @brief Bluetooth Task header file
  ***************************************************************
  * EXTERNAL FUNCTIONS 
  ***************************************************************
- * 
+ * void bt_init( void );
+ * void bt_tx( char *payload );
  *************************************************************** 
  */
 
-#ifndef __CLI_H
-#define __CLI_H
+#ifndef __BT_H
+#define __BT_H
 
+#include "../include/Pinduino.h"
+
+#define BUFFER_SIZE     80
+
+/* Global Typedef ------------------------------------------------------------*/
 /* Function prototypes -------------------------------------------------------*/
-void cli_init( void );
-void serial_print(const char *payload, ...);
+void bt_init( void );
+void bt_tx( char *payload );
 
-#endif // __CLI_H
+#endif // __BT_H

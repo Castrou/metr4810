@@ -7,13 +7,15 @@
  ***************************************************************
  * EXTERNAL FUNCTIONS 
  ***************************************************************
- * 
+ * void stepper_init( void );
+ * void stepper_write( Stepper_t stepper, uint8_t axisVal );
  *************************************************************** 
  */
 
 #ifndef __STEPPER_H
 #define __STEPPER_H
 
+/* Stepper Type */
 typedef enum {
     STEPPER_ROTATE,
     STEPPER_HEIGHT,

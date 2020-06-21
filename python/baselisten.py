@@ -1,11 +1,12 @@
 from controller import *
 import threading
 import time
-
+import argparse
 
 ps4 = PS4Controller()
 ps4.init()
 
+args = None
 
 def controller_thread():
     global ps4
@@ -16,7 +17,7 @@ def update_transmit_info():
     # Button Data
     byte0 = 0
     for i in range(6):
-        byte0 |= (ps4.button_data[i] << (6-i))
+        byte0 |= (ps4.button_data[i] << (7-i))
 
     # Axis Data
     ## L2
@@ -108,12 +109,11 @@ def update_transmit_info():
     
 
 def tx_thread():
-    global ps4
-    comms = serial.Serial('/dev/ttyACM0', 115200)
+    global ps4, args
+    comms = serial.Serial(args.serial_port, 115200)
     while True:
         update_transmit_info();
         comms.write(0xFE.to_bytes(1, 'big'))
-        # comms.write(ps4.tx_data.to_bytes(1, 'big'))
         os.system('clear')
         for key in ps4.tx_data:
             comms.write(ps4.tx_data[key].to_bytes(1, 'big'))
@@ -125,14 +125,13 @@ def tx_thread():
     
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Controller Input Parser for METR4810 Logistics Tycoon')
+    parser.add_argument('--serial', '-s', dest='serial_port', type=str, default="/dev/ttyACM0", help='Serial device to connect to')
+
+    args = parser.parse_args()
+
     thread_controller = threading.Thread(target=controller_thread)
     thread_tx = threading.Thread(target=tx_thread)
 
     thread_controller.start()
     thread_tx.start()
-
-    ### DEBUGGING SERIAL
-    # while True:
-    #     print("sending test")
-    #     comms.write(0xFF.to_bytes(1, 'big'))
-    #     time.sleep(1)

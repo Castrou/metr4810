@@ -1,14 +1,13 @@
 /** 
  **************************************************************
- * @file crane/lib/stepper/stepper.cpp
+ * @file host/lib/stepper/stepper.cpp
  * @author Cameron Stroud - 44344968
  * @date 18062020
  * @brief Stepper source file
  ***************************************************************
  * EXTERNAL FUNCTIONS 
  ***************************************************************
- * void stepper_init( void );
- * void stepper_write( Stepper_t stepper, uint8_t axisVal );
+ * 
  *************************************************************** 
  */
 
@@ -39,6 +38,9 @@ PwmOut StepperRotateSpeed(D3_PIN);
 PwmOut StepperHeightSpeed(D5_PIN);
 PwmOut StepperBoomSpeed(D9_PIN);
 
+// PwmOut servo1(D10_PIN);
+// PwmOut servo2(D11_PIN);
+
 DigitalOut StepperRotateDir(D4_PIN);
 DigitalOut StepperHeightDir(D6_PIN);
 DigitalOut StepperBoomDir(D7_PIN);
@@ -52,16 +54,16 @@ DigitalOut StepperBoomDir(D7_PIN);
 * @param  None
 * @retval None
 */
-void stepper_init( void ) {
+void stepper_init() {
 
     StepperRotateSpeed.write(0);
     StepperRotateDir = 0;
 
-    StepperHeightSpeed.write(0);
-    StepperHeightDir = 0;
+    // StepperHeightSpeed.write(0);
+    // StepperHeightDir = 0;
 
-    StepperBoomSpeed.write(0);
-    StepperBoomDir = 0;
+    // StepperBoomSpeed.write(0);
+    // StepperBoomDir = 0;
 
 }
 
@@ -69,7 +71,7 @@ void stepper_init( void ) {
 
 /**
 * @brief  Maps axis value to duty cycle
-* @param  axisVal: Controller joystick axis value (-100 <= x <= 100)
+* @param  None
 * @retval None
 */
 float stepper_mapSpeed( uint8_t axisVal ) {
@@ -89,8 +91,7 @@ float stepper_mapSpeed( uint8_t axisVal ) {
 
 /**
 * @brief  Writes to stepper based on axis value
-* @param  stepper: Stepper to write to
-* @param  axisVal: Controller joystick axis value
+* @param  None
 * @retval None
 */
 void stepper_write( Stepper_t stepper, uint8_t axisVal ) {

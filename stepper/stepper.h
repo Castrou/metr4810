@@ -1,9 +1,9 @@
 /** 
  **************************************************************
- * @file host/lib/serial/serial.cpp
+ * @file crane/lib/stepper/stepper.cpp
  * @author Cameron Stroud - 44344968
- * @date 14062020
- * @brief Serial Task header file
+ * @date 18062020
+ * @brief Stepper header file
  ***************************************************************
  * EXTERNAL FUNCTIONS 
  ***************************************************************
@@ -11,11 +11,17 @@
  *************************************************************** 
  */
 
-#ifndef __SERIAL_H
-#define __SERIAL_H
+#ifndef __STEPPER_H
+#define __STEPPER_H
+
+typedef enum {
+    STEPPER_ROTATE,
+    STEPPER_HEIGHT,
+    STEPPER_BOOM
+} Stepper_t;
 
 /* Function prototypes -------------------------------------------------------*/
-void myserial_init( void );
-void serial_print(const char *payload, ...);
+void stepper_init();
+void stepper_write(Stepper_t stepper, uint8_t axisVal);
 
 #endif // __SERIAL_H

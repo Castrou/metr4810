@@ -1,21 +1,24 @@
 /** 
  **************************************************************
- * @file host/lib/cli/cli.cpp
+ * @file crane/lib/servo/servo.h
  * @author Cameron Stroud - 44344968
- * @date 14062020
- * @brief CLI Task header file
+ * @date 20062020
+ * @brief Servo header file
  ***************************************************************
  * EXTERNAL FUNCTIONS 
  ***************************************************************
- * 
+ * void servo_init()
+ * void servoRotate_write( uint8_t axisVal )
+ * void servoGrip_toggle()
  *************************************************************** 
  */
 
-#ifndef __CLI_H
-#define __CLI_H
+#ifndef __SERVO_H
+#define __SERVO_H
 
 /* Function prototypes -------------------------------------------------------*/
-void cli_init( void );
-void serial_print(const char *payload, ...);
+void servo_init( void );
+void servoRotate_write( uint8_t axisVal );
+void servoGrip_toggle( void );
 
-#endif // __CLI_H
+#endif // __SERVO_H

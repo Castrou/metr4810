@@ -1,13 +1,14 @@
 /** 
  **************************************************************
- * @file host/lib/cli/cli.cpp
+ * @file btModule_commandline/lib/cli/cli.cpp
  * @author Cameron Stroud - 44344968
  * @date 14062020
  * @brief CLI Task source file
  ***************************************************************
  * EXTERNAL FUNCTIONS 
  ***************************************************************
- * 
+ * void cli_init( void );
+ * void serial_print( char *payload, ... );
  *************************************************************** 
  */
 
@@ -27,9 +28,7 @@
 Thread thread_cli;
 RawSerial pc(USBTX,USBRX, 115200);
 
-// Circular buffers for serial TX and RX data - used by interrupt routines
-const int buffer_size = 255;
-// might need to increase buffer size for high baud rates
+const int buffer_size = BUFFER_SIZE;
 char rx_buffer[buffer_size+1];
 int rx_buffPos;
 
@@ -57,7 +56,7 @@ void cli_init( void ) {
 
 /**
 * @brief  Send information to the console
-* @param  None
+* @param  payload: payload to be sent to console (same format as printf)
 * @retval None
 */
 void serial_print(const char *payload, ...) {
@@ -80,6 +79,7 @@ void serial_print(const char *payload, ...) {
 * @retval None
 */
 void cli_clear_buffer( void ) {
+
     for(int i = 0; i < buffer_size; i++) {
         rx_buffer[i] = 0;
     }
@@ -95,7 +95,6 @@ void cli_clear_buffer( void ) {
 void cli_rx_interrupt( void ) {
 
     char rx_char;
-
     
     while(pc.readable()) {
         rx_char = pc.getc(); // Receive from buffer
@@ -107,7 +106,7 @@ void cli_rx_interrupt( void ) {
             pc.putc('\n');      // Proper carriage return
             rx_buffer[rx_buffPos] = '\n';    // NULL terminate string
             rx_buffPos = 0;
-            rxFlag = 1;
+            rxFlag = 1; // Received line
         }
     }
 
@@ -116,18 +115,13 @@ void cli_rx_interrupt( void ) {
 /*----------------------------------------------------------------------------*/
 
 /**
-* @brief  Check if command
-* @param  None
+* @brief  Check if AT command
+* @param  input: Received serial line
 * @retval None
 */
 bool cli_at_check( char *input ) {
 
     return (input[0] == 'A' && input[1] == 'T');
-}
-
-bool cli_bt_check( char *input ) {
-
-    return (input[0] == 'b' && input[1] == 't' && input[2] == ' ');
 }
 
 /*----------------------------------------------------------------------------*/
@@ -140,18 +134,16 @@ bool cli_bt_check( char *input ) {
 void cli_thread( void ) {
 
     DigitalOut led(LED1);
-    
     serial_print("CLI Thread Initialised\r\n");
 
     while(1) {
 
         if (rxFlag) {
-            if(cli_bt_check(rx_buffer)) {
-                led = !led;
-                bt_tx(BT_CRANE, rx_buffer);
-            } else if (cli_at_check(rx_buffer)) {
-                bt_tx(BT_CRANE, rx_buffer);
+
+            if (cli_at_check(rx_buffer)) { // AT command?
+                bt_tx(rx_buffer); // Send to bluetooth module
             }
+
             cli_clear_buffer();
             rxFlag = 0;
         }

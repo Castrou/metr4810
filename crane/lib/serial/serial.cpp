@@ -1,13 +1,14 @@
 /** 
  **************************************************************
- * @file host/lib/serial/serial.cpp
+ * @file crane/lib/serial/serial.cpp
  * @author Cameron Stroud - 44344968
  * @date 16062020
  * @brief Serial Task source file
  ***************************************************************
  * EXTERNAL FUNCTIONS 
  ***************************************************************
- * 
+ * void myserial_init( void );
+ * void serial_print(const char *payload, ...);
  *************************************************************** 
  */
 
@@ -20,14 +21,18 @@
 #include "serial.h"
 #include "bt.h"
 #include "stepper.h"
+#include "servo.h"
 
 /* Private typedef -----------------------------------------------------------*/
+
+/* RX FSM States */
 typedef enum {
     RX_WAITING,
     RX_RECEIVING,
     RX_TRANSMIT
 } RxState_t;
 
+/* Controller Rx Packet Order */
 typedef enum {
     BUTTON_VAL,
     L2_VAL,
@@ -51,10 +56,8 @@ typedef enum {
 #define L1_BUTTON           0b00001000
 #define R1_BUTTON           0b00000100
 
-#define AXIS_SIGN           0b10000000
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-Thread thread_serial;
 RawSerial pc(USBTX,USBRX, 115200);
 
 /* GAMEPAD VARIABLES */
@@ -67,12 +70,8 @@ uint8_t rx = 0;
 uint8_t ry = 0;
 /*********************/
 
-const int buffer_size = 255;
-
 int rx_buffPos; // Position in packet
 RxState_t rx_state; // Receiving state
-
-int rxFlag = 0;
 
 DigitalOut led1(LED1);
 
@@ -83,23 +82,23 @@ void serial_rx_interrupt();
 /*----------------------------------------------------------------------------*/
 
 /**
-* @brief  Initialises Serial Thread
+* @brief  Initialises Serial Thread (serial_init conflicts with other function)
 * @param  None
 * @retval None
 */
 void myserial_init( void ) {
 
-    serial_print("Serial Thread Initialising...\r\n");
+    serial_print("Serial Interrupt Initialising...");
     rx_state = RX_WAITING;
     pc.attach(&serial_rx_interrupt, RawSerial::RxIrq);
-    thread_serial.start(serial_thread);
+    serial_print("Serial Interrupt Initialised\r\n");
 }
 
 /*----------------------------------------------------------------------------*/
 
 /**
 * @brief  Send information to the console
-* @param  None
+* @param  payload: Message to send to console (same format as printf)
 * @retval None
 */
 void serial_print(const char *payload, ...) {
@@ -117,20 +116,9 @@ void serial_print(const char *payload, ...) {
 /*----------------------------------------------------------------------------*/
 
 /**
-* @brief  Clear RawSerial buffer
-* @param  None
-* @retval None
-*/
-void serial_clear_buffer( void ) {
-    
-    rxFlag = 0;
-}
-
-/*----------------------------------------------------------------------------*/
-
-/**
 * @brief  Updates value based on packet position
-* @param  None
+* @param  value: value to be written
+* @param  pos: position in packet
 * @retval None
 */
 void update_val( uint8_t value, int pos ) {
@@ -175,7 +163,6 @@ void update_val( uint8_t value, int pos ) {
 */
 void serial_rx_interrupt( void ) {
 
-    led1 = !led1;
     uint8_t rx_byte;
 
     while(pc.readable()) {
@@ -184,20 +171,19 @@ void serial_rx_interrupt( void ) {
             case RX_WAITING: // Waiting on packet
                 rx_byte = pc.getc();
                 if (rx_byte == PREAMBLE) {
-                    // oh yeah its receive time bb
+                    /* Received the start of a packet */
                     rx_state = RX_RECEIVING;
-                    // serial_print("START RX\r\n");
                 }
                 break;
 
             case RX_RECEIVING: // Received preamble: packet building time
                 rx_byte = pc.getc();
+
                 /* Quick check to see if its postamble before adding to value */
                 if (rx_byte == POSTAMBLE) {
-                    // oop its done
+                    /* End of packet received */
                     rx_state = RX_TRANSMIT;
                     rx_buffPos = 0;
-                    // serial_print("STOP RX\r\n");
                     break;
                 }
                 update_val(rx_byte, rx_buffPos);
@@ -205,57 +191,39 @@ void serial_rx_interrupt( void ) {
                 break;
 
             case RX_TRANSMIT:
-                // if (buttons&L1_BUTTON) {
-                //     /* Train only needs triggers (at this stage)*/
-                //     bt_tx(BT_TRAIN, PREAMBLE);
-                //     bt_tx(BT_TRAIN, l2);
-                //     bt_tx(BT_TRAIN, r2);
-                //     bt_tx(BT_TRAIN, POSTAMBLE);
-                // } else {
-                //     /* Yeah crane needs everythin */
-                //     bt_tx(BT_CRANE, PREAMBLE);
-                //     bt_tx(BT_CRANE, l2);
-                //     bt_tx(BT_CRANE, r2);
-                //     // bt_tx(BT_CRANE, lx);
-                //     // bt_tx(BT_CRANE, ly);
-                //     // bt_tx(BT_CRANE, rx);
-                //     // bt_tx(BT_CRANE, ry);
-                //     bt_tx(BT_CRANE, POSTAMBLE);
-                // }
 
-                serial_print("--------------------\r\n");
-                serial_print("L2: %d\tR2: %d\r\n", l2, r2);
-                serial_print("LX: %d\tRX: %d\r\n", lx, rx);
-                serial_print("LY: %d\tRY: %d\r\n", ly, ry);
-                serial_print("--------------------\r\n");
-                serial_print("Buttons: %d\r\n", buttons);
+                // serial_print("--------------------\r\n");
+                // serial_print("L2: %d\tR2: %d\r\n", l2, r2);
+                // serial_print("LX: %d\tRX: %d\r\n", lx, rx);
+                // serial_print("LY: %d\tRY: %d\r\n", ly, ry);
+                // serial_print("--------------------\r\n");
+                // serial_print("Buttons: %d\r\n", buttons);
+
+                /* Steppers */
                 stepper_write(STEPPER_ROTATE, rx);
+                stepper_write(STEPPER_HEIGHT, ry);
+                stepper_write(STEPPER_BOOM, ly);
+
+                /* Rotating Servo */
+                servoRotate_write(lx);
+
+                /* Gripper Servos */
+                if ((buttons & R1_BUTTON) == R1_BUTTON) {
+                    led1 = !led1;
+                    servoGrip_toggle();
+                }
+
+                /* Train Motor */
+                bt_tx(PREAMBLE);
+                bt_tx(l2);
+                bt_tx(r2);
+                bt_tx(POSTAMBLE);
+
                 rx_state = RX_WAITING;
                 break;
 
             default:
-                serial_print("What the fuck how\r\n");
-        }
-    }
-}
-
-/*----------------------------------------------------------------------------*/
-
-/**
-* @brief  Serial Thread - Process serial input
-* @param  None
-* @retval None
-*/
-void serial_thread( void ) {
-
-    DigitalOut led(LED1);
-    
-    serial_print("Serial Thread Initialised\r\n");
-
-    while(1) {
-
-        if (rxFlag) {
-            serial_clear_buffer();
+                serial_print("If you are reading this: something's fucked.\r\n");
         }
     }
 }

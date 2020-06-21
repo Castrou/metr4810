@@ -7,7 +7,8 @@
  ***************************************************************
  * EXTERNAL FUNCTIONS 
  ***************************************************************
- * 
+ * void motor_init( void );
+ * void motor_write( uint8_t l2val, uint8_t r2val );
  *************************************************************** 
  */
 
@@ -18,4 +19,4 @@
 void motor_init( void );
 void motor_write( uint8_t l2val, uint8_t r2val );
 
-#endif // __CLI_H
+#endif // __MOTOR_H

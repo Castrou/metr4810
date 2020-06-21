@@ -185,7 +185,6 @@ void serial_rx_interrupt( void ) {
                 if (rx_byte == PREAMBLE) {
                     // oh yeah its receive time bb
                     rx_state = RX_RECEIVING;
-                    // serial_print("START RX\r\n");
                 }
                 break;
 
@@ -196,7 +195,6 @@ void serial_rx_interrupt( void ) {
                     // oop its done
                     rx_state = RX_TRANSMIT;
                     rx_buffPos = 0;
-                    // serial_print("STOP RX\r\n");
                     break;
                 }
                 update_val(rx_byte, rx_buffPos);
@@ -204,29 +202,30 @@ void serial_rx_interrupt( void ) {
                 break;
 
             case RX_TRANSMIT:
-                if (buttons&L1_BUTTON) {
-                    /* Train only needs triggers (at this stage)*/
-                    bt_tx(BT_TRAIN, PREAMBLE);
-                    bt_tx(BT_TRAIN, l2);
-                    bt_tx(BT_TRAIN, r2);
-                    bt_tx(BT_TRAIN, POSTAMBLE);
-                } else {
-                    /* Yeah crane needs everythin */
-                    bt_tx(BT_CRANE, PREAMBLE);
-                    bt_tx(BT_CRANE, l2);
-                    bt_tx(BT_CRANE, r2);
-                    // bt_tx(BT_CRANE, lx);
-                    // bt_tx(BT_CRANE, ly);
-                    // bt_tx(BT_CRANE, rx);
-                    // bt_tx(BT_CRANE, ry);
-                    bt_tx(BT_CRANE, POSTAMBLE);
-                }
-                serial_print("--------------------\r\n");
-                serial_print("L2: %d\tR2: %d\r\n", l2, r2);
-                serial_print("LX: %d\tRX: %d\r\n", lx, rx);
-                serial_print("LY: %d\tRY: %d\r\n", ly, ry);
-                serial_print("--------------------\r\n");
-                serial_print("Buttons: %d\r\n", buttons);
+                /* Transmit to the Crane Nucleo */
+                bt_tx(BT_CRANE, PREAMBLE);
+                bt_tx(BT_CRANE, buttons);
+                bt_tx(BT_CRANE, l2);
+                bt_tx(BT_CRANE, r2);
+                bt_tx(BT_CRANE, lx);
+                bt_tx(BT_CRANE, ly);
+                bt_tx(BT_CRANE, rx);
+                bt_tx(BT_CRANE, ry);
+                bt_tx(BT_CRANE, POSTAMBLE);
+
+                /* Transmit to the Train PCB */
+                bt_tx(BT_TRAIN, PREAMBLE);
+                bt_tx(BT_TRAIN, l2);
+                bt_tx(BT_TRAIN, r2);
+                bt_tx(BT_TRAIN, POSTAMBLE);
+
+                // serial_print("--------------------\r\n");
+                // serial_print("L2: %d\tR2: %d\r\n", l2, r2);
+                // serial_print("LX: %d\tRX: %d\r\n", lx, rx);
+                // serial_print("LY: %d\tRY: %d\r\n", ly, ry);
+                // serial_print("--------------------\r\n");
+                // serial_print("Buttons: %d\r\n", buttons);
+
                 rx_state = RX_WAITING;
                 break;
 
