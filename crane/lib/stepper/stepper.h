@@ -24,6 +24,6 @@ typedef enum {
 
 /* Function prototypes -------------------------------------------------------*/
 void stepper_init();
-void stepper_write(Stepper_t stepper, uint8_t axisVal);
+void stepper_write(Stepper_t stepper, int8_t axisVal);
 
 #endif // __SERIAL_H

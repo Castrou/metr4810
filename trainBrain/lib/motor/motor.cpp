@@ -25,6 +25,7 @@
 
 #define MOTOR_PERIOD_MS     20
 #define MOTOR_OFF           0
+#define MOTOR_HALF_SPEED    0.5f
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -58,11 +59,11 @@ void motor_init( void ) {
 */
 float motor_mapSpeed( uint8_t triggerVal ) {
 
-    float dutyCycle = 0.5f;
+    float dutyCycle = MOTOR_HALF_SPEED;
     int sign = 1 - (2*((triggerVal & SIGN_MASK) >> BYTE_LEN)); // Sign stored at big end
 
     /* Trigger val ranges from 0 - 100 (without sign)
-     * Half it to get 0-25 (capped at max 50 cause of 3v motor)
+     * Half it to get 0-50
      * Add to duty cycle (or take depending on sign) to get % val as decimal
      */
     dutyCycle += (sign * ((triggerVal & VALUE_MASK) / 2)) / 100.0;

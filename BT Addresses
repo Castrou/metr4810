@@ -4,19 +4,20 @@ NAKED_SLAVE+ADDR:0019:10:08ef31
 //
 // Stepper Connections (Assume RHS connection)
 
-STEPPER_ROTATE
+STEPPER_ROTATE (soldered)
 TOP_TOP: green
 TOP_BOT: black
 BOT_TOP: blue
 BOT_BOT: red
 
 STEPPER_HEIGHT
-TOP_TOP: 
-TOP_BOT: 
-BOT_TOP: 
-BOT_BOT: 
+TOP_TOP: GREY
+TOP_BOT: GREEN
+BOT_TOP: RED
+BOT_BOT: YELLOW
 
 STEPPER_BOOM
+
 TOP_TOP: blue
 TOP_BOT: red
 BOT_TOP: green

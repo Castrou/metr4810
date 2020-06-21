@@ -18,6 +18,7 @@
 
 
 #include "stepper.h"
+#include "serial.h"
 #include "../include/Pinduino.h"
 
 /* Private typedef -----------------------------------------------------------*/
@@ -54,12 +55,15 @@ DigitalOut StepperBoomDir(D7_PIN);
 */
 void stepper_init( void ) {
 
+    StepperRotateSpeed.period_ms(5);
     StepperRotateSpeed.write(0);
     StepperRotateDir = 0;
 
+    StepperHeightSpeed.period_ms(5);
     StepperHeightSpeed.write(0);
     StepperHeightDir = 0;
 
+    StepperBoomSpeed.period_ms(5);
     StepperBoomSpeed.write(0);
     StepperBoomDir = 0;
 
@@ -72,14 +76,14 @@ void stepper_init( void ) {
 * @param  axisVal: Controller joystick axis value (-100 <= x <= 100)
 * @retval None
 */
-float stepper_mapSpeed( uint8_t axisVal ) {
+float stepper_mapSpeed( int8_t axisVal ) {
 
     float dutyCycle = 0;
 
     /* Max stepper speed is 50% duty cycle (cause each rising is step)
      * Map values 0-100 to 0-0.5
      */
-    dutyCycle = ((axisVal & VAL_MASK) / 2) / 100.0;
+    dutyCycle = (float)(((axisVal & VAL_MASK) / 2) / 100.0);
 
     return dutyCycle;
 
@@ -93,7 +97,7 @@ float stepper_mapSpeed( uint8_t axisVal ) {
 * @param  axisVal: Controller joystick axis value
 * @retval None
 */
-void stepper_write( Stepper_t stepper, uint8_t axisVal ) {
+void stepper_write( Stepper_t stepper, int8_t axisVal ) {
 
     float dutyCycle = stepper_mapSpeed(axisVal);
 

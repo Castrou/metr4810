@@ -122,11 +122,11 @@ void servoRotate_write( uint8_t axisVal ) {
     servoRotatePulse = servo_mapPulse(angleIncrement);
 
     /* Limit check */
-    if (servoRotatePulse >=  SERVO_MAX) {
-        servoRotatePulse = SERVO_MAX;
-    } else if (servoRotatePulse <= SERVO_MIN) {
-        servoRotatePulse = SERVO_MIN;
-    }
+    // if (servoRotatePulse >=  SERVO_MAX) {
+    //     servoRotatePulse = SERVO_MAX;
+    // } else if (servoRotatePulse <= SERVO_MIN) {
+    //     servoRotatePulse = SERVO_MIN;
+    // }
 
     /* Write value */
     servoRotate.pulsewidth(servoRotatePulse);

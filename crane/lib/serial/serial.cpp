@@ -49,6 +49,9 @@ typedef enum {
 #define PREAMBLE   0xFE
 #define POSTAMBLE  0xFF
 
+#define SIGN_MASK       0b10000000
+#define VAL_MASK        0b01111111
+
 #define X_BUTTON            0b10000000
 #define CIRCLE_BUTTON       0b01000000
 #define TRIANGLE_BUTTON     0b00100000
@@ -62,18 +65,20 @@ RawSerial pc(USBTX,USBRX, 115200);
 
 /* GAMEPAD VARIABLES */
 uint8_t buttons = 0;
-uint8_t l2 = 0;
-uint8_t r2 = 0;
-uint8_t lx = 0;
-uint8_t ly = 0;
-uint8_t rx = 0;
-uint8_t ry = 0;
+int8_t l2 = 0;
+int8_t r2 = 0;
+int8_t lx = 0;
+int8_t ly = 0;
+int8_t rx = 0;
+int8_t ry = 0;
 /*********************/
 
+int8_t rx_byte; // Byte received
 int rx_buffPos; // Position in packet
 RxState_t rx_state; // Receiving state
 
 DigitalOut led1(LED1);
+DigitalOut led2(LED2);
 
 /* Private function prototypes -----------------------------------------------*/
 void serial_thread();
@@ -88,7 +93,7 @@ void serial_rx_interrupt();
 */
 void myserial_init( void ) {
 
-    serial_print("Serial Interrupt Initialising...");
+    serial_print("Serial Interrupt Initialising...\r\n");
     rx_state = RX_WAITING;
     pc.attach(&serial_rx_interrupt, RawSerial::RxIrq);
     serial_print("Serial Interrupt Initialised\r\n");
@@ -121,7 +126,7 @@ void serial_print(const char *payload, ...) {
 * @param  pos: position in packet
 * @retval None
 */
-void update_val( uint8_t value, int pos ) {
+void update_val( int8_t value, int pos ) {
     
     switch(pos) {
         case BUTTON_VAL:
@@ -163,14 +168,14 @@ void update_val( uint8_t value, int pos ) {
 */
 void serial_rx_interrupt( void ) {
 
-    uint8_t rx_byte;
-
+    rx_byte = 0;
+    led2 = !led2;
     while(pc.readable()) {
         /* Rx Finite State Machine */
         switch(rx_state) {
             case RX_WAITING: // Waiting on packet
                 rx_byte = pc.getc();
-                if (rx_byte == PREAMBLE) {
+                if ((uint8_t)rx_byte == PREAMBLE) {
                     /* Received the start of a packet */
                     rx_state = RX_RECEIVING;
                 }
@@ -180,7 +185,7 @@ void serial_rx_interrupt( void ) {
                 rx_byte = pc.getc();
 
                 /* Quick check to see if its postamble before adding to value */
-                if (rx_byte == POSTAMBLE) {
+                if ((uint8_t)rx_byte == POSTAMBLE) {
                     /* End of packet received */
                     rx_state = RX_TRANSMIT;
                     rx_buffPos = 0;
@@ -192,12 +197,12 @@ void serial_rx_interrupt( void ) {
 
             case RX_TRANSMIT:
 
-                // serial_print("--------------------\r\n");
-                // serial_print("L2: %d\tR2: %d\r\n", l2, r2);
-                // serial_print("LX: %d\tRX: %d\r\n", lx, rx);
-                // serial_print("LY: %d\tRY: %d\r\n", ly, ry);
-                // serial_print("--------------------\r\n");
-                // serial_print("Buttons: %d\r\n", buttons);
+                serial_print("--------------------\r\n");
+                serial_print("L2: %d\tR2: %d\r\n", (l2 & VAL_MASK), (r2 & VAL_MASK));
+                serial_print("LX: %d\tRX: %d\r\n", (lx & VAL_MASK), (rx & VAL_MASK));
+                serial_print("LY: %d\tRY: %d\r\n", (ly & VAL_MASK), (ry & VAL_MASK));
+                serial_print("--------------------\r\n");
+                serial_print("Buttons: %d\r\n", buttons);
 
                 /* Steppers */
                 stepper_write(STEPPER_ROTATE, rx);

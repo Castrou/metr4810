@@ -1,17 +1,3 @@
-#! /usr/bin/env python
-# -*- coding: utf-8 -*-
-#
-# This file presents an interface for interacting with the Playstation 4 Controller
-# in Python. Simply plug your PS4 controller into your computer using USB and run this
-# script!
-#
-# NOTE: I assume in this script that the only joystick plugged in is the PS4 controller.
-#       if this is not the case, you will need to change the class accordingly.
-#
-# Copyright © 2015 Clay L. McLeod <clay.l.mcleod@gmail.com>
-#
-# Distributed under terms of the MIT license.
-
 import os
 import pprint
 import pygame
@@ -33,7 +19,7 @@ RY = 4
 ###
 
 class PS4Controller(object):
-    """Class representing the PS4 controller. Pretty straightforward functionality."""
+    """Class representing the PS4 controller."""
 
     controller = None
     axis_data = None
@@ -61,11 +47,6 @@ class PS4Controller(object):
             for i in range(self.controller.get_numbuttons()):
                 self.button_data[i] = 0
 
-        # if not self.hat_data:
-        #     self.hat_data = {}
-        #     for i in range(self.controller.get_numhats()):
-        #         self.hat_data[i] = (0, 0)
-
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.JOYAXISMOTION:
@@ -74,17 +55,6 @@ class PS4Controller(object):
                     self.button_data[event.button] = 1
                 elif event.type == pygame.JOYBUTTONUP:
                     self.button_data[event.button] = 0
-                # elif event.type == pygame.JOYHATMOTION:
-                #     self.hat_data[event.hat] = event.value
-
-                # Insert your code on what you would like to happen for each event here!
-                # In the current setup, I have the state simply printing out to the screen.
-                
-                # os.system('clear')
-                # self.update_transmit_info()
-                # pprint.pprint(self.button_data)
-                # pprint.pprint(self.axis_data)
-                # pprint.pprint(self.hat_data)
 
 
 if __name__ == "__main__":
